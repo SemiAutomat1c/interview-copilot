@@ -75,7 +75,7 @@ Edit `config.json` with your profile:
 ### Run
 
 ```bash
-python main.py
+python3 main.py
 ```
 
 ---
