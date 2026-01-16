@@ -1,4 +1,7 @@
 <p align="center">
+  <img src="assets/logo.png" alt="Interview Copilot Logo" width="120">
+</p>
+<p align="center">
   <h1 align="center">Interview Copilot</h1>
   <p align="center">
     <em>Real-time AI-powered interview assistant</em>
@@ -182,6 +185,10 @@ interview-copilot/
 | Audio Capture | [PyAudio](https://pypi.org/project/PyAudio/) |
 
 ---
+
+## Credits
+
+Built with [OpenCode](https://opencode.ai) - The open source AI coding agent.
 
 ## 📝 License
 
