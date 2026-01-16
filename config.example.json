@@ -1,0 +1,19 @@
+{
+  "_comment": "Copy this to config.json and fill in your actual details",
+  "my_profile": "[YOUR BACKGROUND] Example: 5 years Python development experience. Built ML pipelines at TechCorp. Expert in FastAPI, Django, pandas, scikit-learn. Led team of 3 developers on microservices project.",
+  "job_context": "[JOB YOU'RE INTERVIEWING FOR] Example: Senior Python Developer role at AI Startup. Requirements: Python, ML, API design, team leadership. Focus on building scalable data processing systems.",
+  "system_instruction": "You are an interview assistant. Provide concise, honest 2-3 sentence answers based on the candidate's profile. Be specific with examples. If the profile doesn't have relevant experience, say 'I don't have direct experience with that, but...' and relate to similar skills.",
+  "ollama_settings": {
+    "model": "llama3.2:3b",
+    "temperature": 0.3,
+    "max_tokens": 120,
+    "num_ctx": 2048
+  },
+  "gui_settings": {
+    "window_width": 800,
+    "window_height": 400,
+    "font_size": 18,
+    "auto_clear_timeout": 30,
+    "position": "second_monitor"
+  }
+}

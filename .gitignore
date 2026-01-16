@@ -1,0 +1,64 @@
+# Configuration (contains personal data)
+config.json
+
+# Logs (may contain interview content)
+*.log
+interview_copilot.log
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+ENV/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+
+# Temporary documentation files (internal development notes)
+AUDIO_ROUTING_SETUP.md
+BROWSER_INTERVIEW_FIX.md
+BUILD_COMPLETE.md
+ENHANCED_UI_GUIDE.md
+FAST_TRANSCRIBE_MODE.md
+HEADPHONES_SETUP.md
+OPTIMIZATIONS.md
+PARTIAL_QUESTION_FIX.md
+TEST_RESULTS.md
+TRANSCRIPTION_SPEED_INVESTIGATION.md
+
+# Test files (for development only)
+diagnose_latency.py
+quick_test.py
+test_blackhole.py
+test_components.py
+
+# Vosk model cache (downloaded automatically)
+.cache/

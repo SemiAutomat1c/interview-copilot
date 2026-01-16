@@ -1,0 +1,5 @@
+SpeechRecognition==3.10.1
+pyaudio==0.2.14
+requests==2.31.0
+ollama==0.1.6
+vosk==0.3.44
