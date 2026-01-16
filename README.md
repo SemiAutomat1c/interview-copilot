@@ -1,8 +1,22 @@
-# Interview Copilot 🎙️
+<p align="center">
+  <h1 align="center">Interview Copilot</h1>
+  <p align="center">
+    <em>Real-time AI-powered interview assistant</em>
+  </p>
+  <p align="center">
+    <a href="#features"><img src="https://img.shields.io/badge/Python-3.8+-blue?style=flat-square&logo=python" alt="Python"></a>
+    <a href="#tech-stack"><img src="https://img.shields.io/badge/Flet-UI-purple?style=flat-square" alt="Flet"></a>
+    <a href="#tech-stack"><img src="https://img.shields.io/badge/Vosk-Speech-green?style=flat-square" alt="Vosk"></a>
+    <a href="#tech-stack"><img src="https://img.shields.io/badge/Ollama-LLM-orange?style=flat-square" alt="Ollama"></a>
+    <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow?style=flat-square" alt="License"></a>
+  </p>
+</p>
 
-A real-time AI-powered interview assistant that listens to interview questions and generates intelligent responses using local LLM (Ollama).
+<p align="center">
+  <img src="assets/screenshots/app-screenshot.png" alt="Interview Copilot Screenshot" width="700" style="border-radius: 10px; border: 1px solid #30363d;">
+</p>
 
-![Interview Copilot Screenshot](assets/screenshots/app-screenshot.png)
+---
 
 ## ✨ Features
 
@@ -12,6 +26,8 @@ A real-time AI-powered interview assistant that listens to interview questions a
 - **⌨️ Keyboard Shortcuts** - Quick controls for seamless interview flow
 - **🔒 Privacy-First** - All processing happens locally, no data sent to cloud
 - **🎧 System Audio Support** - Capture audio from any source using BlackHole
+
+---
 
 ## 🚀 Quick Start
 
@@ -31,49 +47,47 @@ A real-time AI-powered interview assistant that listens to interview questions a
 
 ### Installation
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/SemiAutomat1c/interview-copilot.git
-   cd interview-copilot
-   ```
+```bash
+# Clone the repository
+git clone https://github.com/SemiAutomat1c/interview-copilot.git
+cd interview-copilot
 
-2. Create a virtual environment:
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate
-   ```
+# Create virtual environment
+python3 -m venv venv
+source venv/bin/activate
 
-3. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
+# Install dependencies
+pip install -r requirements.txt
 
-4. Create your configuration:
-   ```bash
-   cp config.example.json config.json
-   ```
+# Create your configuration
+cp config.example.json config.json
+```
 
-5. Edit `config.json` with your profile:
-   ```json
-   {
-     "my_profile": "Your experience and skills...",
-     "job_context": "Role you're interviewing for..."
-   }
-   ```
+Edit `config.json` with your profile:
+```json
+{
+  "my_profile": "Your experience and skills...",
+  "job_context": "Role you're interviewing for..."
+}
+```
 
-### Running the App
+### Run
 
 ```bash
 python main.py
 ```
 
+---
+
 ## ⌨️ Keyboard Shortcuts
 
 | Key | Action |
-|-----|--------|
+|:---:|--------|
 | `S` | Start/Stop listening |
-| `Space` or `Enter` | Process current transcription |
+| `Space` / `Enter` | Process current transcription |
 | `Escape` | Clear transcription buffer |
+
+---
 
 ## 🎧 Audio Setup (macOS)
 
@@ -100,14 +114,24 @@ To capture system audio (e.g., from Zoom, Google Meet):
    }
    ```
 
+---
+
 ## ⚙️ Configuration
 
-Edit `config.json` to customize:
+| Setting | Description |
+|---------|-------------|
+| `my_profile` | Your professional background and skills |
+| `job_context` | The role and company you're interviewing for |
+| `ollama_settings.model` | LLM model to use (default: `llama3.2:1b`) |
+| `transcription_settings.engine` | Speech engine (`vosk`) |
+
+<details>
+<summary>Full config.json example</summary>
 
 ```json
 {
-  "my_profile": "Your professional background and skills",
-  "job_context": "The role and company you're interviewing for",
+  "my_profile": "5 years Python development experience...",
+  "job_context": "Senior Python Developer role at AI Startup...",
   "system_instruction": "Custom instructions for the AI",
   "ollama_settings": {
     "model": "llama3.2:1b",
@@ -124,6 +148,9 @@ Edit `config.json` to customize:
   }
 }
 ```
+</details>
+
+---
 
 ## 📁 Project Structure
 
@@ -138,22 +165,29 @@ interview-copilot/
 │   ├── vosk_handler.py  # Speech recognition with Vosk
 │   ├── llm_client.py    # Ollama integration
 │   ├── gui.py           # Flet UI components
-│   ├── config.py        # Configuration loader
-│   └── enums.py         # State enumerations
+│   └── config_loader.py # Configuration loader
 └── assets/
     └── screenshots/     # Documentation images
 ```
 
+---
+
 ## 🛠️ Tech Stack
 
-- **[Flet](https://flet.dev/)** - Modern Python UI framework
-- **[Vosk](https://alphacephei.com/vosk/)** - Offline speech recognition
-- **[Ollama](https://ollama.ai/)** - Local LLM inference
-- **[PyAudio](https://pypi.org/project/PyAudio/)** - Audio capture
+| Component | Technology |
+|-----------|------------|
+| UI Framework | [Flet](https://flet.dev/) |
+| Speech Recognition | [Vosk](https://alphacephei.com/vosk/) |
+| LLM Inference | [Ollama](https://ollama.ai/) |
+| Audio Capture | [PyAudio](https://pypi.org/project/PyAudio/) |
+
+---
 
 ## 📝 License
 
 MIT License - feel free to use this for your own interview prep!
+
+---
 
 ## 🤝 Contributing
 
@@ -161,4 +195,7 @@ Contributions welcome! Please feel free to submit a Pull Request.
 
 ---
 
-**⚠️ Disclaimer:** This tool is meant for interview preparation and practice. Use responsibly and ethically during actual interviews based on the policies of the company you're interviewing with.
+<p align="center">
+  <strong>⚠️ Disclaimer</strong><br>
+  <em>This tool is meant for interview preparation and practice. Use responsibly and ethically during actual interviews based on the policies of the company you're interviewing with.</em>
+</p>
