@@ -1,5 +1,9 @@
 <p align="center">
-  <img src="assets/logoqwe.png" alt="Interview Copilot Logo" width="120">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/logo-white.png">
+    <source media="(prefers-color-scheme: light)" srcset="assets/logo-black.png">
+    <img alt="Interview Copilot Logo" src="assets/logo-black.png" width="120">
+  </picture>
 </p>>
 <p align="center">
   <h1 align="center">Interview Copilot</h1>
