@@ -1,11 +1,9 @@
 <p align="center">
-  <img src="assets/logo.png" alt="Interview Copilot Logo" width="400">
-</p>>
+  <img src="assets/logo.png" alt="Interview Copilot" width="600">
+</p>
 <p align="center">
-  <h1 align="center">Interview Copilot</h1>
-  <p align="center">
-    <em>Real-time AI-powered interview assistant</em>
-  </p>
+  <em>Real-time AI-powered interview assistant</em>
+</p>>
   <p align="center">
     <a href="#features"><img src="https://img.shields.io/badge/Python-3.8+-blue?style=flat-square&logo=python" alt="Python"></a>
     <a href="#tech-stack"><img src="https://img.shields.io/badge/Flet-UI-purple?style=flat-square" alt="Flet"></a>
