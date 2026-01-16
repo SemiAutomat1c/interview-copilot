@@ -3,7 +3,7 @@
 </p>
 <p align="center">
   <em>Real-time AI-powered interview assistant</em>
-</p>>
+</p>
   <p align="center">
     <a href="#features"><img src="https://img.shields.io/badge/Python-3.8+-blue?style=flat-square&logo=python" alt="Python"></a>
     <a href="#tech-stack"><img src="https://img.shields.io/badge/Flet-UI-purple?style=flat-square" alt="Flet"></a>
