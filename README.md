@@ -1,6 +1,6 @@
 <p align="center">
   <img src="assets/logo.png" alt="Interview Copilot" width="150">
-</p>>
+</p>
 <p align="center">
   <em>Real-time AI-powered interview assistant</em>
 </p>
