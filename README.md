@@ -1,6 +1,6 @@
 <p align="center">
-  <img src="assets/logo.png" alt="Interview Copilot Logo" width="120">
-</p>
+  <img src="assets/logoqwe.png" alt="Interview Copilot Logo" width="120">
+</p>>
 <p align="center">
   <h1 align="center">Interview Copilot</h1>
   <p align="center">
