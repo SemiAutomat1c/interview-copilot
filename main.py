@@ -6,6 +6,7 @@ Enhanced with manual controls and real-time transcription preview.
 """
 import sys
 import logging
+from logging.handlers import RotatingFileHandler
 import signal
 import threading
 from pathlib import Path
@@ -21,12 +22,17 @@ from src.gui import CopilotGUI, TranscriptionState
 from src.session_manager import SessionManager, InterviewSession
 
 
-# Configure logging
+# Configure logging with rotation
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler('interview_copilot.log'),
+        RotatingFileHandler(
+            'interview_copilot.log',
+            maxBytes=10*1024*1024,  # 10MB
+            backupCount=5,
+            encoding='utf-8'
+        ),
         logging.StreamHandler()
     ]
 )
@@ -288,6 +294,7 @@ class InterviewCopilot:
         
         try:
             if not self.audio_handler or not self.gui or not self.llm_client:
+                self.is_processing = False
                 return
             
             # Get and clear buffer atomically
@@ -306,17 +313,19 @@ class InterviewCopilot:
             self.gui.update_live_transcription("")
             
             # Process in a separate thread to avoid blocking UI
-            threading.Thread(
+            thread = threading.Thread(
                 target=self._process_question,
                 args=(text,),
                 daemon=True
-            ).start()
+            )
+            thread.start()
             
         except Exception as e:
             logger.error(f"Error in process_now: {e}")
             self.is_processing = False
             if self.gui:
                 self.gui.show_error(str(e))
+            raise
     
     def _process_question(self, question_text: str) -> None:
         """

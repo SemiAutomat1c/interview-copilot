@@ -683,35 +683,53 @@ class CopilotGUI:
             
             self.page.update()
     
-    def display_question_answer(self, question: str, answer: str) -> None:
-        """Display question and answer."""
+    def _increment_session_qa_count(self) -> int:
+        """
+        Thread-safe increment of session Q&A count.
+        
+        Returns:
+            Updated Q&A count
+        """
+        with self._session_lock:
+            if self.session_active:
+                self.session_qa_count += 1
+                return self.session_qa_count
+            return 0
+    
+    def _update_qa_display(self, question: str, answer: str) -> None:
+        """
+        Shared logic for updating Q&A display.
+        Extracted to avoid code duplication between display_question_answer
+        and _do_display_question_answer.
+        """
         if self.question_field:
             self.question_field.value = question
         if self.answer_field:
             self.answer_field.value = answer
         
-        # Add to history
         timestamp = datetime.now().strftime("%H:%M")
         self.qa_history.append((timestamp, question, answer))
         if len(self.qa_history) > 5:
             self.qa_history = self.qa_history[-5:]
         
-        # Update session Q&A count
-        if self.session_active:
-            self.session_qa_count += 1
+        # Thread-safe session Q&A count increment
+        qa_count = self._increment_session_qa_count()
+        if qa_count > 0:
             self.update_session_status({
                 "session_id": self.session_id,
                 "start_time": self.session_start_time,
-                "qa_count": self.session_qa_count,
+                "qa_count": qa_count,
             })
         
         self._update_history_display()
         self.update_live_transcription("")
         self.set_state(TranscriptionState.READY)
-        
+    
+    def display_question_answer(self, question: str, answer: str) -> None:
+        """Display question and answer (main thread call)."""
+        self._update_qa_display(question, answer)
         if self.page:
             self.page.update()
-        
         logger.info("Display updated with new Q&A")
     
     def _update_history_display(self):
@@ -903,28 +921,8 @@ class CopilotGUI:
             self.page.update()
     
     def _do_display_question_answer(self, question: str, answer: str) -> None:
-        """Internal method to display Q&A (called on main thread)."""
-        if self.question_field:
-            self.question_field.value = question
-        if self.answer_field:
-            self.answer_field.value = answer
-        timestamp = datetime.now().strftime("%H:%M")
-        self.qa_history.append((timestamp, question, answer))
-        if len(self.qa_history) > 5:
-            self.qa_history = self.qa_history[-5:]
-        
-        # Update session Q&A count
-        if self.session_active:
-            self.session_qa_count += 1
-            self.update_session_status({
-                "session_id": self.session_id,
-                "start_time": self.session_start_time,
-                "qa_count": self.session_qa_count,
-            })
-        
-        self._update_history_display()
-        self._do_update_live_transcription("")
-        self._do_set_state(TranscriptionState.READY)
+        """Internal method to display Q&A (called via pubsub on main thread)."""
+        self._update_qa_display(question, answer)
         if self.page:
             self.page.update()
         logger.info("Display updated with new Q&A")

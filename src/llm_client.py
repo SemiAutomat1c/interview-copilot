@@ -4,6 +4,7 @@ Handles communication with local Ollama API.
 """
 import ollama
 import logging
+import re
 from typing import Dict, Any, Optional, TYPE_CHECKING
 import re
 
@@ -11,6 +12,10 @@ if TYPE_CHECKING:
     from src.session_manager import InterviewSession
 
 logger = logging.getLogger(__name__)
+
+# Constants for validation
+MAX_QUESTION_LENGTH = 500  # Maximum characters for question
+MIN_QUESTION_WORDS = 4  # Minimum words to consider as question
 
 
 class LLMClient:
@@ -35,6 +40,39 @@ class LLMClient:
         
         logger.info(f"Initialized LLM client with model: {self.model}")
     
+    def _validate_and_sanitize_question(self, question: str) -> Optional[str]:
+        """
+        Validate and sanitize question input before sending to LLM.
+        
+        Args:
+            question: Raw question text
+            
+        Returns:
+            Sanitized question or None if invalid
+        """
+        # Type check
+        if not question or not isinstance(question, str):
+            logger.warning("Invalid question type")
+            return None
+        
+        # Trim whitespace
+        question = question.strip()
+        
+        # Check length
+        if len(question) > MAX_QUESTION_LENGTH:
+            logger.warning(f"Question too long: {len(question)} chars, truncating")
+            question = question[:MAX_QUESTION_LENGTH]
+        
+        # Sanitize - remove control characters
+        question = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', question)
+        
+        # Check minimum length after sanitization
+        if len(question) < 5:
+            logger.debug("Question too short after sanitization")
+            return None
+        
+        return question
+    
     def is_question(self, text: str) -> bool:
         """
         Detect if the input text is a question.
@@ -53,7 +91,7 @@ class LLMClient:
         # Minimum word count to avoid partial questions
         # With manual trigger, user controls when to process
         words = text.split()
-        if len(words) < 4:  # Need at least 4 words (lowered for manual mode)
+        if len(words) < MIN_QUESTION_WORDS:
             logger.debug(f"Question too short ({len(words)} words): '{text}'")
             return False
         
@@ -102,7 +140,13 @@ class LLMClient:
         Returns:
             Generated answer or None if error/not a question
         """
-        # Skip if not a question
+        # Validate and sanitize input
+        question = self._validate_and_sanitize_question(question)
+        if not question:
+            logger.debug("Question validation failed")
+            return None
+        
+        # Check if it's a question
         if not self.is_question(question):
             logger.debug(f"Not identified as question: {question}")
             return None
@@ -124,7 +168,15 @@ class LLMClient:
                 }
             )
             
-            answer = response['message']['content'].strip()
+            # Validate response structure
+            try:
+                answer = response.get('message', {}).get('content', '').strip()
+                if not answer:
+                    raise ValueError("Empty response from LLM")
+            except (KeyError, AttributeError, TypeError) as e:
+                logger.error(f"Unexpected response structure: {e}")
+                logger.debug(f"Response: {response}")
+                return "Error: Received invalid response from LLM"
             
             # Record in session history for conversation continuity
             session.add_exchange(question, answer)

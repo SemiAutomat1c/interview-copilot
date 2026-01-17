@@ -192,7 +192,10 @@ Answer:"""
         return self.current_session
     
     def save_session(self):
-        """Persist current session to disk."""
+        """
+        Persist current session to disk using atomic write.
+        Uses a temporary file and atomic rename to prevent corruption.
+        """
         if not self.current_session:
             return
         
@@ -203,15 +206,29 @@ Answer:"""
             "job_context": session.job_context,
             "system_instruction": session.system_instruction,
             "created_at": session.created_at,
-            "history": session.history
+            "history": session.history[-session.max_history:]  # Only save limited history
         }
         
+        # Use atomic write with temporary file
+        temp_file = SESSION_FILE + '.tmp'
+        
         try:
-            with open(SESSION_FILE, 'w', encoding='utf-8') as f:
+            # Write to temporary file first
+            with open(temp_file, 'w', encoding='utf-8') as f:
                 json.dump(data, f, indent=2)
+            
+            # Atomic rename (on POSIX systems, this is atomic)
+            os.replace(temp_file, SESSION_FILE)
             logger.info("Session saved to disk")
+            
         except Exception as e:
             logger.error(f"Failed to save session: {e}")
+            # Clean up temp file if it exists
+            try:
+                if os.path.exists(temp_file):
+                    os.remove(temp_file)
+            except Exception as cleanup_error:
+                logger.error(f"Failed to remove temp file: {cleanup_error}")
     
     def load_session(self) -> Optional[InterviewSession]:
         """

@@ -223,9 +223,10 @@ class AudioHandler:
             try:
                 self._stream.stop_stream()
                 self._stream.close()
-            except:
-                pass
-            self._stream = None
+            except Exception as e:
+                logger.error(f"Error cleaning up audio stream: {e}")
+            finally:
+                self._stream = None
     
     def _handle_partial_transcription(self, text: str):
         """Handle partial (in-progress) transcription from Vosk."""
@@ -271,9 +272,10 @@ class AudioHandler:
         if self._pyaudio:
             try:
                 self._pyaudio.terminate()
-            except:
-                pass
-            self._pyaudio = None
+            except Exception as e:
+                logger.error(f"Error terminating PyAudio: {e}")
+            finally:
+                self._pyaudio = None
         
         self.is_listening = False
         logger.info("Stopped listening")
