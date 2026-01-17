@@ -90,9 +90,12 @@ python3 main.py
 
 ---
 
-## 🎧 Audio Setup (macOS)
+## 🎧 Audio Setup
 
-To capture system audio (e.g., from Zoom, Google Meet):
+The app works on **macOS, Windows, and Linux**. For system audio capture (hearing the interviewer from Zoom/Meet), follow the guide for your OS:
+
+<details>
+<summary><strong>🍎 macOS (BlackHole)</strong></summary>
 
 1. **Install BlackHole:**
    ```bash
@@ -114,6 +117,51 @@ To capture system audio (e.g., from Zoom, Google Meet):
      }
    }
    ```
+</details>
+
+<details>
+<summary><strong>🪟 Windows (VB-CABLE)</strong></summary>
+
+1. **Download & Install [VB-CABLE](https://vb-audio.com/Cable/)** (free)
+
+2. **Set VB-CABLE as Default:**
+   - Right-click Speaker icon → Sound Settings
+   - Set "VB-CABLE Input" as your output device
+
+3. **Configure in config.json:**
+   ```json
+   {
+     "audio_settings": {
+       "use_system_audio": true,
+       "device_name": "CABLE Output"
+     }
+   }
+   ```
+</details>
+
+<details>
+<summary><strong>🐧 Linux (PulseAudio)</strong></summary>
+
+1. **Create a loopback device:**
+   ```bash
+   pactl load-module module-loopback latency_msec=1
+   ```
+
+2. **Use `pavucontrol`** to route your app's audio to the loopback.
+
+3. **Configure in config.json:**
+   ```json
+   {
+     "audio_settings": {
+       "use_system_audio": true,
+       "device_name": "pulse"
+     }
+   }
+   ```
+</details>
+
+> **Note:** Microphone-only mode works out of the box on all platforms without any extra setup!
+
 
 ---
 
