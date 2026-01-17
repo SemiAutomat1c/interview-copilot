@@ -9,7 +9,7 @@ import logging
 import signal
 import threading
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Tuple
 
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
@@ -18,6 +18,7 @@ from src.config_loader import ConfigLoader
 from src.llm_client import LLMClient
 from src.audio_handler import AudioHandler
 from src.gui import CopilotGUI, TranscriptionState
+from src.session_manager import SessionManager, InterviewSession
 
 
 # Configure logging
@@ -43,6 +44,7 @@ class InterviewCopilot:
         self.llm_client: Optional[LLMClient] = None
         self.audio_handler: Optional[AudioHandler] = None
         self.gui: Optional[CopilotGUI] = None
+        self.session_manager: Optional[SessionManager] = None
         
         # State tracking
         self.is_processing = False
@@ -95,6 +97,10 @@ class InterviewCopilot:
             self.gui.on_stop_listening = self._handle_stop_listening
             self.gui.on_clear_buffer = self._handle_clear_buffer
             
+            # Wire up session callbacks
+            self.gui.on_start_session = self._handle_start_session
+            self.gui.on_load_config = self._handle_load_config
+            
             self.gui.set_state(TranscriptionState.IDLE)
             logger.info("GUI created")
             
@@ -130,7 +136,31 @@ class InterviewCopilot:
             # 5. Audio handler ready (but not started - user must click Start)
             logger.info("[5/5] Audio handler ready (waiting for user to start)")
             
-            # Update GUI with device info - start in IDLE state
+            # 6. Initialize session manager with defaults from config
+            logger.info("[6/7] Initializing session manager...")
+            self.session_manager = SessionManager(
+                default_system_instruction=self.config.get("system_instruction", "")
+            )
+            
+            # Try to restore previous session
+            restored_session = self.session_manager.load_session()
+            
+            # Pre-populate UI with config defaults or restored session
+            if restored_session:
+                logger.info(f"Restored session: {restored_session.session_id[:8]}")
+                self.gui.set_context_fields(restored_session.profile, restored_session.job_context)
+                self.gui.update_session_status(restored_session.get_info())
+                self.gui.collapse_context_panel()
+            else:
+                logger.info("No saved session found, using config defaults")
+                self.gui.set_context_fields(
+                    self.config.get("my_profile", ""),
+                    self.config.get("job_context", "")
+                )
+            
+            logger.info("Session manager initialized")
+            
+            # 7. Update GUI with device info - start in IDLE state
             device_info = self.audio_handler.get_device_info()
             self.gui.update_status(f"Ready - {device_info['name']}")
             self.gui.set_state(TranscriptionState.IDLE)
@@ -243,6 +273,13 @@ class InterviewCopilot:
     
     def _handle_process_now(self) -> None:
         """Handle manual 'Process Now' trigger."""
+        # Check if session is active
+        if not self.session_manager or not self.session_manager.has_active_session():
+            logger.warning("No active session - cannot process question")
+            if self.gui:
+                self.gui.show_no_session_warning()
+            return
+        
         with self.processing_lock:
             if self.is_processing:
                 logger.info("Already processing, ignoring trigger")
@@ -289,17 +326,26 @@ class InterviewCopilot:
             question_text: The transcribed question
         """
         try:
-            if not self.gui or not self.llm_client:
+            if not self.gui or not self.llm_client or not self.session_manager:
                 return
             
             # Update state (thread-safe)
             self.gui.set_state_safe(TranscriptionState.GENERATING)
             
-            # Generate answer
-            answer = self.llm_client.generate_answer(question_text)
+            # Get current session
+            session = self.session_manager.get_current_session()
+            if not session:
+                logger.error("No active session during processing")
+                self.gui.show_error_safe("No active session")
+                return
+            
+            # Generate answer using session context (ZERO re-processing)
+            answer = self.llm_client.generate_answer_with_session(session, question_text)
             
             if answer:
                 self._display_result(question_text, answer)
+                # Save session after each Q&A to persist conversation history
+                self.session_manager.save_session()
             else:
                 self._display_not_question(question_text)
                 
@@ -325,6 +371,64 @@ class InterviewCopilot:
                 "(Not identified as a question - need 4+ words with question indicators)"
             )
             logger.info("Text not identified as question")
+    
+    def _handle_start_session(self, profile: str, job_context: str) -> None:
+        """
+        Handle start new session request from GUI.
+        
+        Args:
+            profile: User's professional background
+            job_context: Target job description
+        """
+        if not self.session_manager:
+            logger.error("Session manager not initialized")
+            if self.gui:
+                self.gui.show_error_safe("Session manager not available")
+            return
+        
+        # Validate inputs
+        if not profile.strip() and not job_context.strip():
+            logger.warning("Cannot create session with empty profile and job context")
+            if self.gui:
+                self.gui.show_error_safe("Please provide profile or job context")
+            return
+        
+        try:
+            logger.info("Creating new session...")
+            
+            # Create new session (this is where context is processed ONCE)
+            session = self.session_manager.create_session(
+                profile=profile,
+                job_context=job_context
+            )
+            
+            # Update GUI with session info AFTER successful creation
+            if self.gui:
+                self.gui.update_session_status(session.get_info())
+                self.gui.collapse_context_panel()
+            
+            logger.info(f"Session created: {session.session_id[:8]}")
+            
+        except Exception as e:
+            logger.error(f"Failed to create session: {e}")
+            if self.gui:
+                self.gui.show_error_safe(f"Session creation failed: {str(e)}")
+    
+    def _handle_load_config(self) -> Tuple[str, str]:
+        """
+        Load profile and job context from config file.
+        
+        Returns:
+            Tuple of (profile, job_context)
+        """
+        if not self.config:
+            return ("", "")
+        
+        profile = self.config.get("my_profile", "")
+        job_context = self.config.get("job_context", "")
+        
+        logger.info("Loaded context from config file")
+        return (profile, job_context)
     
     def _handle_start_listening(self) -> None:
         """Handle start listening request."""

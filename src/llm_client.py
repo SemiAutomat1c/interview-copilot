@@ -4,9 +4,11 @@ Handles communication with local Ollama API.
 """
 import ollama
 import logging
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, TYPE_CHECKING
 import re
 
+if TYPE_CHECKING:
+    from src.session_manager import InterviewSession
 
 logger = logging.getLogger(__name__)
 
@@ -84,6 +86,55 @@ class LLMClient:
             return True
         
         return False
+    
+    def generate_answer_with_session(self, session: 'InterviewSession', 
+                                      question: str) -> Optional[str]:
+        """
+        Generate answer using pre-built session context (ZERO re-processing).
+        
+        This method uses the session's cached prompts and conversation history,
+        eliminating the overhead of rebuilding context on every question.
+        
+        Args:
+            session: Active interview session with pre-built prompts
+            question: The interview question
+            
+        Returns:
+            Generated answer or None if error/not a question
+        """
+        # Skip if not a question
+        if not self.is_question(question):
+            logger.debug(f"Not identified as question: {question}")
+            return None
+        
+        try:
+            # Use session's pre-built messages (NO re-processing)
+            messages = session.build_messages(question)
+            
+            logger.info(f"Generating answer for: {question[:50]}...")
+            
+            response = ollama.chat(
+                model=self.model,
+                messages=messages,
+                stream=False,
+                options={
+                    "temperature": self.temperature,
+                    "num_predict": self.max_tokens,
+                    "num_ctx": self.num_ctx
+                }
+            )
+            
+            answer = response['message']['content'].strip()
+            
+            # Record in session history for conversation continuity
+            session.add_exchange(question, answer)
+            
+            logger.info(f"Generated answer: {answer[:100]}...")
+            return answer
+            
+        except Exception as e:
+            logger.error(f"Error generating answer: {e}")
+            return f"Error: Unable to generate answer ({str(e)})"
     
     def generate_answer(self, question: str) -> Optional[str]:
         """

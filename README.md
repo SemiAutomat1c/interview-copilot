@@ -23,6 +23,9 @@
 
 - **🎤 Real-time Transcription** - Uses Vosk for fast, offline speech-to-text
 - **🤖 AI-Powered Responses** - Generates contextual answers using Ollama (llama3.2)
+- **🎯 Dynamic Context Management** - Edit profile and job context directly in UI, no file editing needed
+- **💬 Conversation Memory** - Maintains last 3 Q&A pairs for intelligent follow-up questions
+- **💾 Session Persistence** - Auto-saves and restores your interview sessions
 - **🖥️ Modern UI** - Clean, minimal Flet-based interface with shadcn-inspired design
 - **⌨️ Keyboard Shortcuts** - Quick controls for seamless interview flow
 - **🔒 Privacy-First** - All processing happens locally, no data sent to cloud
@@ -64,19 +67,52 @@ pip install -r requirements.txt
 cp config.example.json config.json
 ```
 
-Edit `config.json` with your profile:
-```json
-{
-  "my_profile": "Your experience and skills...",
-  "job_context": "Role you're interviewing for..."
-}
-```
+> **Note:** With the new dynamic context management system, you can now edit your profile and job context directly in the UI! The config.json file is optional and serves as defaults.
 
 ### Run
 
 ```bash
 python3 main.py
 ```
+
+---
+
+## 🎯 Using Dynamic Context Management
+
+**NEW!** Interview Copilot now features a powerful context management system that lets you switch between different interview contexts without editing files or restarting the app.
+
+### Quick Start
+
+1. **Launch the app** - Your last session is automatically restored
+2. **Expand the Context Panel** at the top of the UI
+3. **Fill in your details:**
+   - **My Profile**: Your background, skills, and experience
+   - **Job Context**: The role you're interviewing for
+4. **Click "Start New Session"** - Context is processed once, then reused for all questions
+5. **Ask questions** as usual!
+
+### Key Features
+
+- **Zero Performance Impact** - Context processed once per session, not per question
+- **Conversation Memory** - Remembers last 3 Q&A for follow-up questions
+- **Auto-Save** - Sessions persist across app restarts
+- **Hot-Swap Contexts** - Switch between different interviews instantly
+
+### Example Workflow
+
+```
+1. Enter profile: "Senior Python Developer, 5 years ML experience..."
+2. Enter context: "Applying for ML Engineer at AI Startup..."
+3. Click "Start New Session"
+4. Ask: "Tell me about your Python experience"
+   → Answer references your specific background
+5. Ask: "What about ML projects?" 
+   → Answer builds on previous exchange
+6. Need to prep for a different interview?
+   → Expand panel, enter new context, start new session!
+```
+
+For detailed documentation, see [QUICK_START.md](QUICK_START.md)
 
 ---
 
@@ -167,10 +203,12 @@ The app works on **macOS, Windows, and Linux**. For system audio capture (hearin
 
 ## ⚙️ Configuration
 
+> **💡 Pro Tip:** With dynamic context management, you can now edit your profile and job context directly in the UI! The config.json file serves as default values that can be loaded with the "Load from Config" button.
+
 | Setting | Description |
 |---------|-------------|
-| `my_profile` | Your professional background and skills |
-| `job_context` | The role and company you're interviewing for |
+| `my_profile` | Your professional background and skills (can be edited in UI) |
+| `job_context` | The role and company you're interviewing for (can be edited in UI) |
 | `ollama_settings.model` | LLM model to use (default: `llama3.2:1b`) |
 | `transcription_settings.engine` | Speech engine (`vosk`) |
 
@@ -205,18 +243,21 @@ The app works on **macOS, Windows, and Linux**. For system audio capture (hearin
 
 ```
 interview-copilot/
-├── main.py              # Application entry point
-├── config.json          # Your configuration (gitignored)
-├── config.example.json  # Example configuration
-├── requirements.txt     # Python dependencies
+├── main.py                 # Application entry point
+├── config.json             # Your configuration (gitignored)
+├── config.example.json     # Example configuration
+├── requirements.txt        # Python dependencies
+├── QUICK_START.md          # User guide for context management
+├── SESSION_MANAGEMENT.md   # Technical documentation
 ├── src/
-│   ├── audio_handler.py # Audio capture and processing
-│   ├── vosk_handler.py  # Speech recognition with Vosk
-│   ├── llm_client.py    # Ollama integration
-│   ├── gui.py           # Flet UI components
-│   └── config_loader.py # Configuration loader
+│   ├── audio_handler.py    # Audio capture and processing
+│   ├── vosk_handler.py     # Speech recognition with Vosk
+│   ├── llm_client.py       # Ollama integration
+│   ├── gui.py              # Flet UI components
+│   ├── config_loader.py    # Configuration loader
+│   └── session_manager.py  # Session lifecycle management (NEW)
 └── assets/
-    └── screenshots/     # Documentation images
+    └── screenshots/        # Documentation images
 ```
 
 ---
@@ -229,6 +270,25 @@ interview-copilot/
 | Speech Recognition | [Vosk](https://alphacephei.com/vosk/) |
 | LLM Inference | [Ollama](https://ollama.ai/) |
 | Audio Capture | [PyAudio](https://pypi.org/project/PyAudio/) |
+
+---
+
+## 📖 Documentation
+
+- **[QUICK_START.md](QUICK_START.md)** - User guide for dynamic context management
+- **[SESSION_MANAGEMENT.md](SESSION_MANAGEMENT.md)** - Technical documentation and architecture
+
+---
+
+## 🆕 What's New
+
+### v2.0 - Dynamic Context Management (Latest)
+
+- ✨ **UI-based context editing** - No more editing config files!
+- 💬 **Conversation memory** - Maintains last 3 Q&A for follow-up questions
+- 💾 **Session persistence** - Auto-saves and restores sessions
+- 🚀 **Hot-swap contexts** - Switch between different interviews instantly
+- ⚡ **Zero performance impact** - Context processed once, reused for all questions
 
 ---
 
