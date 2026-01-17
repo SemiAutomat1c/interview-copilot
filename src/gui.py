@@ -4,6 +4,7 @@ Clean, modern UI inspired by shadcn/ui design system.
 """
 import flet as ft
 import logging
+import threading
 from typing import Dict, Any, Optional, Callable, List, Tuple
 from enum import Enum
 from datetime import datetime
@@ -59,6 +60,9 @@ class CopilotGUI:
         self.current_state = TranscriptionState.IDLE
         self.is_listening = False
         self.qa_history: List[Tuple[str, str, str]] = []
+        
+        # Thread safety for session state
+        self._session_lock = threading.Lock()
         self.session_active: bool = False
         self.session_id: Optional[str] = None
         self.session_start_time: Optional[str] = None
@@ -154,10 +158,10 @@ class CopilotGUI:
                     ft.Container(height=12),
                     buttons,
                     ft.Container(height=12),
-                    ft.Container(content=question_card, expand=True), # Make question card fill remaining space
+                    ft.Container(content=question_card, expand=1),  # Question gets less space
                     ft.Container(height=12),
-                    ft.Container(content=answer_card, expand=True), # Make answer card fill remaining space
-                    ft.Container(height=12),
+                    ft.Container(content=answer_card, expand=3),    # Answer gets 3x more space
+                    ft.Container(height=8),
                     history_section,
                 ],
                 spacing=0,
@@ -238,6 +242,7 @@ class CopilotGUI:
             border_color=self.colors["border"],
             focused_border_color=self.colors["primary"],
             text_style=ft.TextStyle(size=13),
+            expand=True,
         )
         
         # Job context input
@@ -251,6 +256,7 @@ class CopilotGUI:
             border_color=self.colors["border"],
             focused_border_color=self.colors["primary"],
             text_style=ft.TextStyle(size=13),
+            expand=True,
         )
         
         # Action buttons
@@ -521,7 +527,7 @@ class CopilotGUI:
                     ),
                     ft.Container(
                         content=self.history_column,
-                        height=150,
+                        height=100,
                     ),
                 ],
                 spacing=0,
