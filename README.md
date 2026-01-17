@@ -14,7 +14,7 @@
 </p>
 
 <p align="center">
-  <img src="assets/screenshots/app-screenshot.png" alt="Interview Copilot Screenshot" width="700" style="border-radius: 10px; border: 1px solid #30363d;">
+  <img src="assets/screenshots/app_demo-ezgif.com-optimize.gif" alt="Interview Copilot Demo" width="700" style="border-radius: 10px; border: 1px solid #30363d;">
 </p>
 
 ---
