@@ -9,6 +9,7 @@
     <a href="#tech-stack"><img src="https://img.shields.io/badge/Flet-UI-purple?style=flat-square" alt="Flet"></a>
     <a href="#tech-stack"><img src="https://img.shields.io/badge/Vosk-Speech-green?style=flat-square" alt="Vosk"></a>
     <a href="#tech-stack"><img src="https://img.shields.io/badge/Ollama-LLM-orange?style=flat-square" alt="Ollama"></a>
+    <a href="#gemini-hybrid-mode"><img src="https://img.shields.io/badge/Gemini-Hybrid-4285F4?style=flat-square&logo=google" alt="Gemini"></a>
     <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow?style=flat-square" alt="License"></a>
   </p>
 </p>
@@ -23,6 +24,7 @@
 
 - **🎤 Real-time Transcription** - Uses Vosk for fast, offline speech-to-text
 - **🤖 AI-Powered Responses** - Generates contextual answers using Ollama (llama3.2)
+- **✨ Gemini Hybrid Mode** - Get instant local answers + enhanced Gemini answers in background
 - **🎯 Dynamic Context Management** - Edit profile and job context directly in UI, no file editing needed
 - **💬 Conversation Memory** - Maintains last 3 Q&A pairs for intelligent follow-up questions
 - **💾 Session Persistence** - Auto-saves and restores your interview sessions
@@ -239,6 +241,36 @@ The app works on **macOS, Windows, and Linux**. For system audio capture (hearin
 
 ---
 
+## ✨ Gemini Hybrid Mode
+
+**NEW!** Get the best of both worlds: instant local answers + enhanced Gemini answers.
+
+### How It Works
+
+```
+Question → Local LLM (~2s) → Display immediately
+        ↘ Gemini API (background) → "✨ Enhanced answer ready" → Click to apply
+```
+
+### Setup
+
+1. **Get a free Gemini API key**: https://makersuite.google.com/app/apikey
+
+2. **Add to config.json**:
+   ```json
+   "gemini_settings": {
+     "enabled": true,
+     "api_key": "YOUR_API_KEY_HERE",
+     "model": "gemini-2.0-flash"
+   }
+   ```
+
+3. **Run the app** - You'll see local answers instantly, then a purple banner when the enhanced answer is ready!
+
+> **Note:** Gemini is optional. The app works perfectly with just Ollama.
+
+---
+
 ## 📁 Project Structure
 
 ```
@@ -253,9 +285,11 @@ interview-copilot/
 │   ├── audio_handler.py    # Audio capture and processing
 │   ├── vosk_handler.py     # Speech recognition with Vosk
 │   ├── llm_client.py       # Ollama integration
+│   ├── gemini_client.py    # Gemini API integration (NEW)
 │   ├── gui.py              # Flet UI components
 │   ├── config_loader.py    # Configuration loader
-│   └── session_manager.py  # Session lifecycle management (NEW)
+│   └── session_manager.py  # Session lifecycle management
+
 └── assets/
     └── screenshots/        # Documentation images
 ```
@@ -282,7 +316,14 @@ interview-copilot/
 
 ## 🆕 What's New
 
-### v2.0 - Dynamic Context Management (Latest)
+### v2.1 - Gemini Hybrid Mode (Latest)
+
+- ✨ **Hybrid AI answers** - Instant local + enhanced Gemini in background
+- 🎯 **Improved prompts** - Answers now focus on questions, not force-fitting profile
+- 📢 **Enhanced answer banner** - Click to apply Gemini's refined answer
+- 🔧 **Better context handling** - Profile referenced only when relevant
+
+### v2.0 - Dynamic Context Management
 
 - ✨ **UI-based context editing** - No more editing config files!
 - 💬 **Conversation memory** - Maintains last 3 Q&A for follow-up questions

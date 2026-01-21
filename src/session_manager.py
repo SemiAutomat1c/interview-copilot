@@ -157,19 +157,14 @@ class SessionManager:
             session: Session to build prompts for
         """
         session._system_message = {"role": "system", "content": session.system_instruction}
-        session._context_template = f"""Context about the candidate:
+        session._context_template = f"""You have the following background (reference ONLY if directly relevant):
 {session.profile}
 
-Job context:
-{session.job_context}
+Target role: {session.job_context}
 
-Question from interviewer: {{question}}
+Interviewer's question: {{question}}
 
-Provide a concise 2-3 sentence answer that:
-- Directly addresses the question
-- References specific experience from the profile
-- Sounds natural and conversational
-- Stays under 100 words
+Answer directly and concisely (2-3 sentences). Only mention your background if it directly relates to the question. Focus on answering WHAT is being asked.
 
 Answer:"""
     

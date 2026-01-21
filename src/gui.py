@@ -68,6 +68,10 @@ class CopilotGUI:
         self.session_start_time: Optional[str] = None
         self.session_qa_count: int = 0
         
+        # Enhanced answer (Gemini) state
+        self.enhanced_answer_pending: Optional[str] = None
+        self.enhanced_answer_banner: Optional[ft.Container] = None
+        
         # Callbacks
         self.on_process_now: Optional[Callable[[], None]] = None
         self.on_restart_listening: Optional[Callable[[], None]] = None
@@ -884,6 +888,8 @@ class CopilotGUI:
             )
         elif msg_type == "error":
             self._do_show_error(message.get("message", ""))
+        elif msg_type == "enhanced_answer_ready":
+            self._do_show_enhanced_answer_banner(message.get("answer", ""))
     
     def _do_update_live_transcription(self, text: str) -> None:
         """Internal method to update live transcription (called on main thread)."""
@@ -960,6 +966,80 @@ class CopilotGUI:
         """Thread-safe error display."""
         if self.page:
             self.page.pubsub.send_all({"type": "error", "message": message})
+    
+    def show_enhanced_answer_ready_safe(self, answer: str) -> None:
+        """Thread-safe notification that enhanced Gemini answer is ready."""
+        if self.page:
+            self.page.pubsub.send_all({"type": "enhanced_answer_ready", "answer": answer})
+    
+    def _do_show_enhanced_answer_banner(self, answer: str) -> None:
+        """Show the enhanced answer notification banner (called on main thread)."""
+        if not self.page:
+            return
+        
+        self.enhanced_answer_pending = answer
+        
+        def _apply_enhanced_answer(e):
+            """Apply the enhanced Gemini answer."""
+            if self.enhanced_answer_pending and self.answer_field:
+                self.answer_field.value = self.enhanced_answer_pending
+                self.enhanced_answer_pending = None
+            self._hide_enhanced_banner()
+        
+        def _dismiss_banner(e):
+            """Dismiss the banner without applying."""
+            self.enhanced_answer_pending = None
+            self._hide_enhanced_banner()
+        
+        # Create the notification banner
+        self.enhanced_answer_banner = ft.Container(
+            content=ft.Row(
+                controls=[
+                    ft.Icon(ft.Icons.AUTO_AWESOME, color="#8B5CF6", size=18),
+                    ft.Text(
+                        "✨ Enhanced answer ready",
+                        weight=ft.FontWeight.W_600,
+                        color="#8B5CF6",
+                        size=13,
+                    ),
+                    ft.Container(expand=True),
+                    ft.TextButton(
+                        "Apply",
+                        on_click=_apply_enhanced_answer,
+                        style=ft.ButtonStyle(
+                            color="#8B5CF6",
+                        ),
+                    ),
+                    ft.IconButton(
+                        icon=ft.Icons.CLOSE,
+                        icon_size=16,
+                        icon_color=self.colors["muted_foreground"],
+                        on_click=_dismiss_banner,
+                    ),
+                ],
+                alignment=ft.MainAxisAlignment.START,
+                spacing=8,
+            ),
+            padding=ft.padding.symmetric(horizontal=16, vertical=8),
+            border_radius=8,
+            bgcolor="#F3E8FF",  # Light purple
+            border=ft.border.all(1, "#8B5CF6"),
+            animate_opacity=300,
+        )
+        
+        # Add banner to the page overlay
+        self.page.overlay.append(self.enhanced_answer_banner)
+        self.page.update()
+        
+        logger.info("Enhanced answer banner shown")
+    
+    def _hide_enhanced_banner(self) -> None:
+        """Hide the enhanced answer banner."""
+        if self.enhanced_answer_banner and self.page:
+            if self.enhanced_answer_banner in self.page.overlay:
+                self.page.overlay.remove(self.enhanced_answer_banner)
+            self.enhanced_answer_banner = None
+            self.page.update()
     
     def run(self) -> None:
         """Start the Flet app."""

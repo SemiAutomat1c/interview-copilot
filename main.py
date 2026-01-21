@@ -20,6 +20,7 @@ from src.llm_client import LLMClient
 from src.audio_handler import AudioHandler
 from src.gui import CopilotGUI, TranscriptionState
 from src.session_manager import SessionManager, InterviewSession
+from src.gemini_client import GeminiClient
 
 
 # Configure logging with rotation
@@ -48,6 +49,7 @@ class InterviewCopilot:
         self.config_loader = None
         self.config = None
         self.llm_client: Optional[LLMClient] = None
+        self.gemini_client: Optional[GeminiClient] = None
         self.audio_handler: Optional[AudioHandler] = None
         self.gui: Optional[CopilotGUI] = None
         self.session_manager: Optional[SessionManager] = None
@@ -90,6 +92,14 @@ class InterviewCopilot:
                 logger.error(f"  And model is installed: ollama pull {self.llm_client.model}")
                 return False
             logger.info("Ollama connected")
+            
+            # 2.5. Initialize Gemini client (optional enhancement)
+            logger.info("[2.5/7] Initializing Gemini client...")
+            self.gemini_client = GeminiClient(self.config)
+            if self.gemini_client.is_available():
+                logger.info("Gemini client ready (hybrid mode enabled)")
+            else:
+                logger.info("Gemini not configured - using local LLM only")
             
             # 3. Initialize GUI first (we need it for callbacks)
             logger.info("[3/5] Initializing GUI...")
@@ -355,6 +365,16 @@ class InterviewCopilot:
                 self._display_result(question_text, answer)
                 # Save session after each Q&A to persist conversation history
                 self.session_manager.save_session()
+                
+                # Trigger Gemini in background for enhanced answer
+                if self.gemini_client and self.gemini_client.is_available():
+                    logger.info("Starting Gemini background generation...")
+                    self.gemini_client.generate_answer_async(
+                        session,
+                        question_text,
+                        callback=self._on_gemini_answer_ready,
+                        error_callback=lambda e: logger.warning(f"Gemini failed: {e}")
+                    )
             else:
                 self._display_not_question(question_text)
                 
@@ -370,6 +390,18 @@ class InterviewCopilot:
         if self.gui:
             self.gui.display_question_answer_safe(question, answer)
             logger.info("Result displayed successfully")
+    
+    def _on_gemini_answer_ready(self, enhanced_answer: str) -> None:
+        """
+        Callback when Gemini finishes generating enhanced answer.
+        Shows notification banner in GUI.
+        
+        Args:
+            enhanced_answer: The enhanced answer from Gemini
+        """
+        logger.info(f"Gemini answer ready: {enhanced_answer[:50]}...")
+        if self.gui:
+            self.gui.show_enhanced_answer_ready_safe(enhanced_answer)
     
     def _display_not_question(self, text: str) -> None:
         """Handle case where text wasn't identified as a question."""
